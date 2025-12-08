@@ -1,0 +1,5 @@
+Crea un archivo .env con el siguiente formato.
+
+VERIFY_TOKEN=
+WHATSAPP_ACCESS_TOKEN=
+PHONE_NUMBER_ID=
