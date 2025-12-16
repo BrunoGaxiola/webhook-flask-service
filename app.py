@@ -31,6 +31,54 @@ def send_whatsapp_message(to, message):
     print("Send message response:", response.json())
     return response.json()
 
+# Enviar el primer mensaje de cita.
+def send_cita_taller(to):
+    url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "messaging_product": "whatsapp",    
+        "recipient_type": "individual",
+        "to": to,
+        "type": "template",
+        "template": {
+            "name": "cita_taller",
+            "language": {"code": "es_MX"},
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "parameter_name": "nombre_apellido",
+                            "text": "Fredi Gaxiola"
+                        },
+                        {
+                            "type": "text",
+                            "parameter_name": "taller",
+                            "text": "Yokohama Colosio"
+                        },
+                        {
+                            "type": "text",
+                            "parameter_name": "fecha",
+                            "text": "miércoles 26 de noviembre"
+                        },
+                        {
+                            "type": "text",
+                            "parameter_name": "hora",
+                            "text": "17:00"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+    response = requests.post(url, json=data, headers=headers)
+    print("Send message response:", response.json())
+    return response.json()
+
 # Enviar mensaje de confirmación de elección.
 def send_confirmation_message(to, payload):
     url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
@@ -150,7 +198,7 @@ def webhook():
                 if msg_type == "text":
                     user_text = msg["text"]["body"]
                     print(f"User wrote: {user_text}")
-                    send_whatsapp_message(sender, "Gracias por tu mensaje de texto.")
+                    send_whatsapp_message(sender, "Por favor, elige una de las opciones enviadas previamente.")
 
                 # Respuestas por medio de los botones de respuesta.
                 elif msg_type == "button":
