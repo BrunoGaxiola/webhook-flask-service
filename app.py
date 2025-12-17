@@ -179,6 +179,7 @@ def webhook():
     if request.method == "POST":
         body = request.get_json()
         print("Webhook received:")
+        print(request) # Borrar esto lol.
         print(body)
 
         # Por cada Webhook entrante recopila datos como el sender y el contenido del mensaje
