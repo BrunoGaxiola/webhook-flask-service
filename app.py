@@ -143,6 +143,18 @@ def send_reagendar_cita(to):
         "template": {
             "name": "reagendar_cita",
             "language": {"code": "es_MX"},
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "parameter_name": "telefono",
+                            "text": "6621228925"
+                        },
+                    ]
+                }
+            ]
         }
     }
 
