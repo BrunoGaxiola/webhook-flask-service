@@ -62,11 +62,6 @@ def send_cita_taller_buena(to):
                         },
                         {
                             "type": "text",
-                            "parameter_name": "domicilio",
-                            "text": "Blvd. Antonio Quiroga 135, El Llanito, 83175 Hermosillo, Son."
-                        },
-                        {
-                            "type": "text",
                             "parameter_name": "fecha",
                             "text": "miércoles 26 de noviembre"
                         },
