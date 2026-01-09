@@ -31,8 +31,8 @@ def send_whatsapp_message(to, message):
     print("Send message response:", response.json())
     return response.json()
 
-# Enviar el primer mensaje de cita.
-def send_cita_taller(to):
+# Enviar la primera plantilla cita_taller_buena.
+def send_cita_taller_buena(to):
     url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -44,7 +44,7 @@ def send_cita_taller(to):
         "to": to,
         "type": "template",
         "template": {
-            "name": "cita_taller",
+            "name": "cita_taller_buena",
             "language": {"code": "es_MX"},
             "components": [
                 {
@@ -52,13 +52,18 @@ def send_cita_taller(to):
                     "parameters": [
                         {
                             "type": "text",
-                            "parameter_name": "nombre_apellido",
-                            "text": "Fredi Gaxiola"
+                            "parameter_name": "nombre",
+                            "text": "Fredi Gaxiola Gutierrez"
                         },
                         {
                             "type": "text",
-                            "parameter_name": "taller",
-                            "text": "Yokohama Colosio"
+                            "parameter_name": "nom_suc",
+                            "text": "Econollantas Quiroga"
+                        },
+                        {
+                            "type": "text",
+                            "parameter_name": "domicilio",
+                            "text": "Blvd. Antonio Quiroga 135, El Llanito, 83175 Hermosillo, Son."
                         },
                         {
                             "type": "text",
@@ -79,8 +84,8 @@ def send_cita_taller(to):
     print("Send message response:", response.json())
     return response.json()
 
-# Enviar mensaje de confirmación de elección.
-def send_confirmation_message(to, payload):
+# Enviar mensaje de plantilla cita_confirmada.
+def send_cita_confirmada(to):
     url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -92,20 +97,8 @@ def send_confirmation_message(to, payload):
         "to": to,
         "type": "template",
         "template": {
-            "name": "opcion_seleccionada",
+            "name": "cita_confirmada",
             "language": {"code": "es_MX"},
-            "components": [
-                {
-                    "type": "body",
-                    "parameters": [
-                        {
-                           "type": "text",
-                           "parameter_name": "opcion_seleccionada",
-                           "text": f"{payload}" 
-                        }
-                    ]
-                }
-            ]
         }
     }
 
@@ -113,8 +106,8 @@ def send_confirmation_message(to, payload):
     print("Send message response:", response.json())
     return response.json()
 
-# Enviar mensaje de plantilla cancelar_reagendar_cita.
-def send_cancelar_reagendar_cita(to):
+# Enviar mensaje de plantilla cita_cancelada.
+def send_cita_cancelada(to):
     url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -126,7 +119,7 @@ def send_cancelar_reagendar_cita(to):
         "to": to,
         "type": "template",
         "template": {
-            "name": "cancelar_reagendar_cita",
+            "name": "cita_cancelada",
             "language": {"code": "es_MX"},
         }
     }
@@ -156,6 +149,7 @@ def send_reagendar_cita(to):
     response = requests.post(url, json=data, headers=headers)
     print("Send message response:", response.json())
     return response.json()
+
 # Ruta principal del servicio web.
 @app.route("/", methods=["GET", "POST", "HEAD"])
 def webhook():
@@ -211,12 +205,10 @@ def webhook():
                     # Dependiendo del payload del botón presionado por el usuario, 
                     # se sigue el flujo de mensajería.
                     if button_payload == "Si, confirmo la cita.":
-                        send_whatsapp_message(sender, "Perfecto, su cita ha sido confirmada. Nos vemos pronto.")
+                        send_cita_confirmada(sender)
                     elif button_payload == "No, cancelo la cita.":
-                        send_cancelar_reagendar_cita(sender)
-                    elif button_payload == "Cancelar cita.":
-                        send_whatsapp_message(sender, "Su cita ha sido cancelada. Que tenga un excelente día.")
-                    elif button_payload == "Reagendar cita.":
+                        send_cita_cancelada(sender)
+                    elif button_payload == "Deseo reagendar.":
                         send_reagendar_cita(sender)
                     else:
                         send_whatsapp_message(sender, "Esa respuesta no es válida. Seleccione una opción válida.")
