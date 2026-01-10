@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Declarar variables de entorno.
-SERVER_DRIVER = os.getenv("SERVER")
+SERVER_DRIVER = os.getenv("DRIVER")
 SERVER_URL = os.getenv("SERVER")
 SERVER_DATABASE = os.getenv("DATABASE")
 SERVER_USER = os.getenv("USER")
@@ -15,5 +15,6 @@ try:
     connection = pyodbc.connect(f"DRIVER={SERVER_DRIVER};SERVER={SERVER_URL};DATABASE={SERVER_DATABASE};UID={SERVER_USER};PWD={SERVER_PASSWORD}")
     print("Se ha conectado con la base de datos con éxito.")
     connection.close()
+    print("Se ha cerrado la conexión con la base de datos.")
 except Exception as e:
     print("Hubo error conectándose con la base de datos.")
