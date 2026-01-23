@@ -32,7 +32,7 @@ def send_whatsapp_message(to, message):
     return response.json()
 
 # Enviar la primera plantilla cita_taller_buena.
-def send_cita_taller_buena(to):
+def send_confirmacion_cita_taller(to):
     url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
     headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
@@ -44,7 +44,7 @@ def send_cita_taller_buena(to):
         "to": to,
         "type": "template",
         "template": {
-            "name": "cita_taller_buena",
+            "name": "confirmacion_cita_taller",
             "language": {"code": "es_MX"},
             "components": [
                 {
@@ -52,22 +52,22 @@ def send_cita_taller_buena(to):
                     "parameters": [
                         {
                             "type": "text",
-                            "parameter_name": "nombre",
+                            "parameter_name": "nombrecliente",
                             "text": "Fredi Gaxiola Gutierrez"
                         },
                         {
                             "type": "text",
-                            "parameter_name": "nom_suc",
+                            "parameter_name": "nomsucemp",
                             "text": "Econollantas Quiroga"
                         },
                         {
                             "type": "text",
-                            "parameter_name": "fecha",
+                            "parameter_name": "fechacita",
                             "text": "miércoles 26 de noviembre"
                         },
                         {
                             "type": "text",
-                            "parameter_name": "hora",
+                            "parameter_name": "horacita",
                             "text": "17:00"
                         }
                     ]
