@@ -182,6 +182,7 @@ def webhook():
         print("Webhook received:")
         print(request) # Borrar esto lol.
         print(body)
+        print("\n") # Leer mejor cada webhook.
 
         # Por cada Webhook entrante recopila datos como el sender y el contenido del mensaje
         try:
