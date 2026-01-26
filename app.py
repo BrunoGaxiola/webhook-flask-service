@@ -31,6 +31,17 @@ def send_whatsapp_message(to, message):
     print("Send message response:", response.json())
     return response.json()
 
+# Función para enviar los webhooks al endpoint InteGGra.
+def sendWebhooks(body):
+    url = os.getenv("INTEGGRA_WEBHOOKS_ENDPOINT")
+    headers = {"Content-Type": "application/json"}
+    data = body
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        print("Webhook successfully sent to endpoint:", response.json())
+    except Exception as e:
+        print("Error while sending webhook to endpoint,", e)
+
 # Enviar la primera plantilla cita_taller_buena.
 def send_confirmacion_cita_taller(to):
     url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
@@ -182,6 +193,7 @@ def webhook():
         print("Webhook received:")
         print(request) # Borrar esto lol.
         print(body)
+        sendWebhooks(body)
         print("\n") # Leer mejor cada webhook.
 
         # Por cada Webhook entrante recopila datos como el sender y el contenido del mensaje
