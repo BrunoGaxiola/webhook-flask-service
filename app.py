@@ -37,7 +37,7 @@ def sendWebhooks(body):
     headers = {"Content-Type": "application/json"}
     data = body
     try:
-        response = requests.post(url, json=data, headers=headers)
+        response = requests.post(url, json=data, headers=headers, verify=False)
         print("Webhook successfully sent to endpoint:", response.json())
     except Exception as e:
         print("Error while sending webhook to endpoint,", e)
