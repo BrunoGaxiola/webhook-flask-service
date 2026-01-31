@@ -18,6 +18,7 @@ SERVER_URL = os.getenv("SERVER")
 SERVER_DATABASE = os.getenv("DATABASE")
 SERVER_USER = os.getenv("USER")
 SERVER_PASSWORD = os.getenv("PASSWORD")
+INTEGGRA_WEBHOOKS_ENDPOINT = os.getenv("INTEGGRA_WEBHOOKS_ENDPOINT")
 
 # Establecer conexión con la base de datos.
 connectToDB(SERVER_DRIVER, SERVER_URL, SERVER_DATABASE, SERVER_USER, SERVER_PASSWORD)
@@ -47,7 +48,7 @@ def webhook():
         print("Webhook received:")
         print(request) # Borrar esto lol.
         print(body)
-        sendWebhooks(body)
+        sendWebhooks(body, INTEGGRA_WEBHOOKS_ENDPOINT)
         print("\n") # Leer mejor cada webhook.
 
         # Por cada Webhook entrante recopila datos como el sender y el contenido del mensaje
