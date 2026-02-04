@@ -74,7 +74,7 @@ def webhook():
                 # Buscar el registro con el display_phone_number
                 # Asumo que hay una tabla con una columna para el número de teléfono
                 # Ajusta el nombre de la tabla y columnas según tu esquema
-                query = "SELECT EndPoint FROM EndPoints WHERE Tel_WAB = ?"
+                query = "SELECT EndPoint FROM EndPoints WHERE Tel_WAB = %s"
                 cursor.execute(query, (display_phone_number,))
                 
                 result = cursor.fetchone()
