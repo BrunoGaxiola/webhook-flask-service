@@ -1,8 +1,8 @@
-import pyodbc
+import pymssql
 
-def connectToDB(driver, url, database, user, password):
+def connectToDB(url, user, password, database):
     try:
-        connection = pyodbc.connect(f"DRIVER={driver};SERVER={url};DATABASE={database};UID={user};PWD={password}")
+        connection = pymssql.connect(server=url, user=user, password=password, database=database)
         print("Se ha conectado con la base de datos con éxito.")
         return connection
     except Exception as e:
