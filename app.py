@@ -1,6 +1,7 @@
 from flask import Flask, request
 from dotenv import load_dotenv
-import requests
+from messages import sendWebhooks, send_whatsapp_message, send_cita_confirmada, send_cita_cancelada, send_reagendar_cita
+from connect import connectToDB
 import os
 
 # Cargar variables de entorno.
@@ -12,161 +13,15 @@ app = Flask(__name__)
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
 ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
+SERVER_DRIVER = os.getenv("DRIVER")
+SERVER_URL = os.getenv("SERVER")
+SERVER_DATABASE = os.getenv("DATABASE")
+SERVER_USER = os.getenv("USER")
+SERVER_PASSWORD = os.getenv("PASSWORD")
+INTEGGRA_WEBHOOKS_ENDPOINT = os.getenv("INTEGGRA_WEBHOOKS_ENDPOINT")
 
-# Enviar mensaje de texto de WhatsApp.
-def send_whatsapp_message(to, message):
-    url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "messaging_product": "whatsapp",
-        "to": to,
-        "type": "text",
-        "text": { "body": message }
-    }
-
-    response = requests.post(url, json=data, headers=headers)
-    print("Send message response:", response.json())
-    return response.json()
-
-# Función para enviar los webhooks al endpoint InteGGra.
-def sendWebhooks(body):
-    url = os.getenv("INTEGGRA_WEBHOOKS_ENDPOINT")
-    headers = {"Content-Type": "application/json"}
-    data = body
-    try:
-        response = requests.post(url, json=data, headers=headers, verify=False)
-        print("Webhook successfully sent to endpoint:", response.json())
-    except Exception as e:
-        print("Error while sending webhook to endpoint,", e)
-
-# Enviar la primera plantilla cita_taller_buena.
-def send_confirmacion_cita_taller(to):
-    url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "messaging_product": "whatsapp",    
-        "recipient_type": "individual",
-        "to": to,
-        "type": "template",
-        "template": {
-            "name": "confirmacion_cita_taller",
-            "language": {"code": "es_MX"},
-            "components": [
-                {
-                    "type": "body",
-                    "parameters": [
-                        {
-                            "type": "text",
-                            "parameter_name": "nombrecliente",
-                            "text": "Fredi Gaxiola Gutierrez"
-                        },
-                        {
-                            "type": "text",
-                            "parameter_name": "nomsucemp",
-                            "text": "Econollantas Quiroga"
-                        },
-                        {
-                            "type": "text",
-                            "parameter_name": "fechacita",
-                            "text": "miércoles 26 de noviembre"
-                        },
-                        {
-                            "type": "text",
-                            "parameter_name": "horacita",
-                            "text": "17:00"
-                        }
-                    ]
-                }
-            ]
-        }
-    }
-    response = requests.post(url, json=data, headers=headers)
-    print("Send message response:", response.json())
-    return response.json()
-
-# Enviar mensaje de plantilla cita_confirmada.
-def send_cita_confirmada(to):
-    url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": to,
-        "type": "template",
-        "template": {
-            "name": "cita_confirmada",
-            "language": {"code": "es_MX"},
-        }
-    }
-
-    response = requests.post(url, json=data, headers=headers)
-    print("Send message response:", response.json())
-    return response.json()
-
-# Enviar mensaje de plantilla cita_cancelada.
-def send_cita_cancelada(to):
-    url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": to,
-        "type": "template",
-        "template": {
-            "name": "cita_cancelada",
-            "language": {"code": "es_MX"},
-        }
-    }
-
-    response = requests.post(url, json=data, headers=headers)
-    print("Send message response:", response.json())
-    return response.json()
-
-# Enviar mensaje de plantilla reagendar_cita.
-def send_reagendar_cita(to):
-    url = f"https://graph.facebook.com/v22.0/{PHONE_NUMBER_ID}/messages"
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": to,
-        "type": "template",
-        "template": {
-            "name": "reagendar_cita",
-            "language": {"code": "es_MX"},
-            "components": [
-                {
-                    "type": "body",
-                    "parameters": [
-                        {
-                            "type": "text",
-                            "parameter_name": "telefono",
-                            "text": "6621228925"
-                        },
-                    ]
-                }
-            ]
-        }
-    }
-
-    response = requests.post(url, json=data, headers=headers)
-    print("Send message response:", response.json())
-    return response.json()
+# Establecer conexión con la base de datos, asignar a una variable para contruir un cursor.
+connection = connectToDB(SERVER_DRIVER, SERVER_URL, SERVER_DATABASE, SERVER_USER, SERVER_PASSWORD)
 
 # Ruta principal del servicio web.
 @app.route("/", methods=["GET", "POST", "HEAD"])
@@ -193,7 +48,48 @@ def webhook():
         print("Webhook received:")
         print(request) # Borrar esto lol.
         print(body)
-        sendWebhooks(body)
+
+        # Extraer display_phone_number del webhook
+        display_phone_number = None
+        try:
+            entry = body["entry"][0]
+            changes = entry["changes"][0]
+            value = changes["value"]
+            
+            # Obtener el display_phone_number del metadata
+            if "metadata" in value and "display_phone_number" in value["metadata"]:
+                display_phone_number = value["metadata"]["display_phone_number"]
+                print(f"Display phone number found: {display_phone_number}")
+        except Exception as e:
+            print(f"Error extracting display_phone_number: {e}")
+        
+        # Buscar el EndPoint en la base de datos usando el display_phone_number
+        endpoint_to_use = INTEGGRA_WEBHOOKS_ENDPOINT  # Valor por defecto
+        
+        if display_phone_number and connection:
+            try:
+                # Crear un cursor para ejecutar consultas
+                cursor = connection.cursor()
+                
+                # Buscar el registro con el display_phone_number
+                # Asumo que hay una tabla con una columna para el número de teléfono
+                # Ajusta el nombre de la tabla y columnas según tu esquema
+                query = "SELECT EndPoint FROM EndPoints WHERE Tel_WAB = ?"
+                cursor.execute(query, (display_phone_number,))
+                
+                result = cursor.fetchone()
+                if result:
+                    endpoint_to_use = result[0]
+                    print(f"EndPoint found in DB.")
+                else:
+                    print(f"No record found for phone number.")
+                
+                cursor.close()
+            except Exception as e:
+                print(f"Error querying database: {e}")
+        
+        # Usar el endpoint encontrado o el por defecto.
+        sendWebhooks(body, endpoint_to_use)
         print("\n") # Leer mejor cada webhook.
 
         # Por cada Webhook entrante recopila datos como el sender y el contenido del mensaje
