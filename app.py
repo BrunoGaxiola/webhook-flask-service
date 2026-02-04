@@ -80,7 +80,7 @@ def webhook():
                 result = cursor.fetchone()
                 if result:
                     endpoint_to_use = result[0]
-                    print(f"EndPoint found in DB.")
+                    print(f"EndPoint found in DB: ", endpoint_to_use)
                 else:
                     print(f"No record found for phone number.")
                 
