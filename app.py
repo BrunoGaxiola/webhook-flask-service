@@ -1,8 +1,9 @@
 from flask import Flask, request
 from dotenv import load_dotenv
-from messages import sendWebhooks, send_whatsapp_message, send_cita_confirmada, send_cita_cancelada, send_reagendar_cita
+from messages import send_whatsapp_message, send_cita_confirmada, send_cita_cancelada, send_reagendar_cita
 from connect import connectToDB
 import os
+import requests
 
 # Cargar variables de entorno.
 load_dotenv()
@@ -22,6 +23,16 @@ INTEGGRA_WEBHOOKS_ENDPOINT = os.getenv("INTEGGRA_WEBHOOKS_ENDPOINT")
 
 # Establecer conexión con la base de datos, asignar a una variable para contruir un cursor.
 connection = connectToDB(SERVER_URL, SERVER_USER, SERVER_PASSWORD, SERVER_DATABASE)
+
+# Función para enviar los webhooks al endpoint InteGGra.
+def sendWebhooks(body, url):
+    headers = {"Content-Type": "application/json"}
+    data = body
+    try:
+        response = requests.post(url, json=data, headers=headers, verify=False)
+        print("Webhook successfully sent to endpoint:", response.json())
+    except Exception as e:
+        print("Error while sending webhook to endpoint,", e)
 
 # Ruta principal del servicio web.
 @app.route("/", methods=["GET", "POST", "HEAD"])
