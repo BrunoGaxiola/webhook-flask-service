@@ -3,11 +3,14 @@ from dotenv import load_dotenv
 from messages import sendWebhooks, send_whatsapp_message, send_cita_confirmada, send_cita_cancelada, send_reagendar_cita
 from connect import connectToDB
 import os
+from urllib3 import disable_warnings
 
 # Cargar variables de entorno.
 load_dotenv()
 # Inicializar aplicación de Flask.
 app = Flask(__name__)
+# Ignorar advertencias.
+disable_warnings()
 
 # Variables de entorno.
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
@@ -21,7 +24,7 @@ SERVER_PASSWORD = os.getenv("PASSWORD")
 INTEGGRA_WEBHOOKS_ENDPOINT = os.getenv("INTEGGRA_WEBHOOKS_ENDPOINT")
 
 # Establecer conexión con la base de datos, asignar a una variable para contruir un cursor.
-connection = connectToDB(SERVER_URL, SERVER_DATABASE, SERVER_USER, SERVER_PASSWORD)
+connection = connectToDB(SERVER_URL, SERVER_USER, SERVER_PASSWORD, SERVER_DATABASE)
 
 # Ruta principal del servicio web.
 @app.route("/", methods=["GET", "POST", "HEAD"])
