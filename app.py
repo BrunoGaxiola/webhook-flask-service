@@ -30,7 +30,7 @@ connection = connectToDB(SERVER_URL, SERVER_USER, SERVER_PASSWORD, SERVER_DATABA
 def get_endpoint_from_database(phone_number):
     try:
         cursor = connection.cursor()
-        query = "SELECT EndPoint FROM EndPoints WHERE Tel_WAB = %s"
+        query = "SELECT EndPoint FROM EndPointss WHERE Tel_WAB = %s"
         cursor.execute(query, (phone_number,))
         result = cursor.fetchone()
         cursor.close()
