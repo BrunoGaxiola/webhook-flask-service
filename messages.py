@@ -4,6 +4,16 @@ This is a file of Python functions to send webhooks and send WhatsApp messages.
 The environment variables needed are located in the app.py file.
 """
 
+# Función para enviar los webhooks al endpoint InteGGra.
+def sendWebhooks(body, url):
+    headers = {"Content-Type": "application/json"}
+    data = body
+    try:
+        response = requests.post(url, json=data, headers=headers, verify=False)
+        print("Webhook successfully sent to endpoint:", response.json())
+    except Exception as e:
+        print("Error while sending webhook to endpoint,", e)
+
 # Enviar mensaje de texto de WhatsApp.
 def send_whatsapp_message(to, message, phoneNumberID, accessToken):
     url = f"https://graph.facebook.com/v22.0/{phoneNumberID}/messages"
