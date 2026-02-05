@@ -26,6 +26,19 @@ INTEGGRA_WEBHOOKS_ENDPOINT = os.getenv("INTEGGRA_WEBHOOKS_ENDPOINT")
 # Establecer conexión con la base de datos, asignar a una variable para contruir un cursor.
 connection = connectToDB(SERVER_URL, SERVER_USER, SERVER_PASSWORD, SERVER_DATABASE)
 
+# Función para consultar endpoint en BD
+def get_endpoint_from_database(phone_number):
+    try:
+        cursor = connection.cursor()
+        query = "SELECT EndPoint FROM EndPoints WHERE Tel_WAB = %s"
+        cursor.execute(query, (phone_number,))
+        result = cursor.fetchone()
+        cursor.close()
+        return result[0] if result else None
+    except Exception as e:
+        print(f"Error BD para {phone_number}: {e}")
+        return None
+
 # Ruta principal del servicio web.
 @app.route("/", methods=["GET", "POST", "HEAD"])
 def webhook():
@@ -48,13 +61,28 @@ def webhook():
     # Request POST para leer los webhooks entrantes.
     if request.method == "POST":
         body = request.get_json()
-        print("Webhook received:")
-        print(request) # Borrar esto lol.
-        print(body)
-        sendWebhooks(body, INTEGGRA_WEBHOOKS_ENDPOINT)
-        print("\n") # Leer mejor cada webhook.
+        print("Webhook recibido:", body)
+        
+        # Buscar endpoint en BD usando display_phone_number
+        try:
+            entry = body.get("entry", [{}])[0]
+            changes = entry.get("changes", [{}])[0]
+            value = changes.get("value", {})
+            metadata = value.get("metadata", {})
+            display_phone_number = metadata.get("display_phone_number")
+            
+            if display_phone_number:
+                endpoint_url = get_endpoint_from_database(display_phone_number)
+                if endpoint_url:
+                    sendWebhooks(body, endpoint_url)
+                else:
+                    print(f"No endpoint para {display_phone_number}")
+            else:
+                print("Sin display_phone_number")
+        except Exception as e:
+            print(f"Error procesando webhook: {e}")
 
-        # Por cada Webhook entrante recopila datos como el sender y el contenido del mensaje
+        # Manejo de respuestas de WhatsApp
         try:
             entry = body["entry"][0]
             changes = entry["changes"][0]
@@ -64,24 +92,18 @@ def webhook():
             if messages:
                 msg = messages[0]
                 sender = msg["from"]
-
                 msg_type = msg["type"]
 
-                # Respuesta en caso de que el cliente responda con un mensaje de texto.
                 if msg_type == "text":
                     user_text = msg["text"]["body"]
-                    print(f"User wrote: {user_text}")
+                    print(f"Texto recibido: {user_text}")
                     send_whatsapp_message(sender, "Por favor, elige una de las opciones enviadas previamente.", PHONE_NUMBER_ID, ACCESS_TOKEN)
 
-                # Respuestas por medio de los botones de respuesta.
                 elif msg_type == "button":
                     button_payload = msg["button"]["payload"]
                     button_text = msg["button"]["text"]
+                    print(f"Botón presionado: {button_text}")
 
-                    print(f"User pressed button: {button_text} | Payload: {button_payload}")
-
-                    # Dependiendo del payload del botón presionado por el usuario, 
-                    # se sigue el flujo de mensajería.
                     if button_payload == "Si, confirmo la cita.":
                         send_cita_confirmada(sender, PHONE_NUMBER_ID, ACCESS_TOKEN)
                     elif button_payload == "No, cancelo la cita.":
@@ -89,9 +111,9 @@ def webhook():
                     elif button_payload == "Deseo reagendar.":
                         send_reagendar_cita(sender, PHONE_NUMBER_ID, ACCESS_TOKEN)
                     else:
-                        send_whatsapp_message(sender, "Esa respuesta no es válida. Seleccione una opción válida.", PHONE_NUMBER_ID, ACCESS_TOKEN)
+                        send_whatsapp_message(sender, "Respuesta no válida.", PHONE_NUMBER_ID, ACCESS_TOKEN)
         except Exception as e:
-            print("Error handling webhook:", e)
+            print("Error flujo WhatsApp:", e)
 
         return "EVENT_RECEIVED", 200
 
