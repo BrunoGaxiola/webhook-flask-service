@@ -10,7 +10,7 @@ def sendWebhooks(body, url):
     data = body
     try:
         response = requests.post(url, json=data, headers=headers, verify=False, timeout=10)
-        print("Webhook successfully sent to endpoint:", response.json())
+        print("Webhook successfully sent to endpoint:", url, response.json())
     except Exception as e:
         print("Error while sending webhook to endpoint,", e)
 
