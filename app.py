@@ -30,7 +30,7 @@ connection = connectToDB(SERVER_URL, SERVER_USER, SERVER_PASSWORD, SERVER_DATABA
 def get_endpoint_from_database(phone_number):
     try:
         cursor = connection.cursor()
-        query = "SELECT EndPoint FROM EndPointss WHERE Tel_WAB = %s"
+        query = "SELECT EndPoint FROM EndPoints WHERE Tel_WAB = %s"
         cursor.execute(query, (phone_number,))
         result = cursor.fetchone()
         cursor.close()
@@ -62,6 +62,7 @@ def webhook():
     if request.method == "POST":
         body = request.get_json()
         print("Webhook recibido:", body)
+        print('\n')
         
         # Buscar endpoint en BD usando display_phone_number
         try:
@@ -73,6 +74,7 @@ def webhook():
             
             if display_phone_number:
                 endpoint_url = get_endpoint_from_database(display_phone_number)
+                endpoint_url = endpoint_url.rstrip()
                 if endpoint_url:
                     sendWebhooks(body, endpoint_url)
                 else:
