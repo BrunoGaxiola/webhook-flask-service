@@ -89,6 +89,8 @@ def webhook():
             entry = body["entry"][0]
             changes = entry["changes"][0]
             value = changes["value"]
+            metadata = value.get("metadata", {})
+            display_phone_number = metadata.get("display_phone_number")
             messages = value.get("messages")
 
             if messages:
@@ -99,7 +101,7 @@ def webhook():
                 if msg_type == "text":
                     user_text = msg["text"]["body"]
                     print(f"Texto recibido: {user_text}")
-                    send_whatsapp_message(sender, "Por favor, elige una de las opciones enviadas previamente.", PHONE_NUMBER_ID, ACCESS_TOKEN)
+                    send_whatsapp_message(display_phone_number, "Por favor, elige una de las opciones enviadas previamente.", PHONE_NUMBER_ID, ACCESS_TOKEN)
 
                 elif msg_type == "button":
                     button_payload = msg["button"]["payload"]
@@ -107,13 +109,13 @@ def webhook():
                     print(f"Botón presionado: {button_text}")
 
                     if button_payload == "Si, confirmo la cita.":
-                        send_cita_confirmada(sender, PHONE_NUMBER_ID, ACCESS_TOKEN)
+                        send_cita_confirmada(display_phone_number, PHONE_NUMBER_ID, ACCESS_TOKEN)
                     elif button_payload == "No, cancelo la cita.":
-                        send_cita_cancelada(sender, PHONE_NUMBER_ID, ACCESS_TOKEN)
+                        send_cita_cancelada(display_phone_number, PHONE_NUMBER_ID, ACCESS_TOKEN)
                     elif button_payload == "Deseo reagendar.":
-                        send_reagendar_cita(sender, PHONE_NUMBER_ID, ACCESS_TOKEN)
+                        send_reagendar_cita(display_phone_number, PHONE_NUMBER_ID, ACCESS_TOKEN)
                     else:
-                        send_whatsapp_message(sender, "Respuesta no válida.", PHONE_NUMBER_ID, ACCESS_TOKEN)
+                        send_whatsapp_message(display_phone_number, "Respuesta no válida.", PHONE_NUMBER_ID, ACCESS_TOKEN)
         except Exception as e:
             print("Error flujo WhatsApp:", e)
 
