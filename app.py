@@ -89,11 +89,12 @@ def webhook():
             entry = body["entry"][0]
             changes = entry["changes"][0]
             value = changes["value"]
+            metadata = value.get("metadata", {})
+            sender = metadata.get("display_phone_number")
             messages = value.get("messages")
 
             if messages:
                 msg = messages[0]
-                sender = msg["from"]
                 msg_type = msg["type"]
 
                 if msg_type == "text":
