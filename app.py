@@ -63,26 +63,6 @@ def webhook():
         body = request.get_json()
         print("Webhook recibido:", body)
         print('\n')
-        
-        # Buscar endpoint en BD usando display_phone_number
-        try:
-            entry = body.get("entry", [{}])[0]
-            changes = entry.get("changes", [{}])[0]
-            value = changes.get("value", {})
-            metadata = value.get("metadata", {})
-            display_phone_number = metadata.get("display_phone_number")
-            
-            if display_phone_number:
-                endpoint_url = get_endpoint_from_database(display_phone_number)
-                endpoint_url = endpoint_url.rstrip()
-                if endpoint_url:
-                    sendWebhooks(body, endpoint_url)
-                else:
-                    print(f"No endpoint para {display_phone_number}")
-            else:
-                print("Sin display_phone_number")
-        except Exception as e:
-            print(f"Error procesando webhook: {e}")
 
         # Manejo de respuestas de WhatsApp
         try:
@@ -107,6 +87,24 @@ def webhook():
                     button_text = msg["button"]["text"]
                     print(f"Botón presionado: {button_text}")
 
+                    # SOLO PARA RESPUESTAS DE BOTÓN: Buscar endpoint en BD y enviar webhook.
+                    try:
+                        metadata = value.get("metadata", {})
+                        display_phone_number = metadata.get("display_phone_number")
+                        
+                        if display_phone_number:
+                            endpoint_url = get_endpoint_from_database(display_phone_number)
+                            if endpoint_url:
+                                endpoint_url = endpoint_url.rstrip()
+                                sendWebhooks(body, endpoint_url)
+                                print(f"Webhook de respuesta enviado a {endpoint_url}")
+                            else:
+                                print(f"No se consiguió endpoint en BD para {display_phone_number}")
+                        else:
+                            print("Sin display_phone_number en webhook de botón.")
+                    except Exception as e:
+                        print(f"Error procesando webhook de botón: {e}")
+
                     if button_payload == "Si, confirmo la cita.":
                         send_cita_confirmada(sender, phone_number_id, ACCESS_TOKEN)
                     elif button_payload == "No, cancelo la cita.":
@@ -119,7 +117,7 @@ def webhook():
             print("Error flujo WhatsApp:", e)
 
         return "EVENT_RECEIVED", 200
-
+    
 # Programa principal.
 if __name__ == "__main__":
     import os
