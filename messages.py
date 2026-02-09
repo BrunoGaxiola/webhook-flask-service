@@ -1,7 +1,7 @@
 import requests
 """
-This is a file of Python functions to send webhooks and send WhatsApp messages.
-The environment variables needed are located in the app.py file.
+Este archivo contiene todas las funciones necesarias para el envío de plantillas y mensajes con la API de WhatsApp.
+Son utilizadas en el archivo app.py.
 """
 
 # Función para enviar los webhooks al endpoint InteGGra.
@@ -10,7 +10,7 @@ def sendWebhooks(body, url):
     data = body
     try:
         response = requests.post(url, json=data, headers=headers, verify=False, timeout=10)
-        print("Webhook successfully sent to endpoint:", url, response.json())
+        print("Webhook de respuesta ha sido enviado a", url, response.json())
     except Exception as e:
         print("Error while sending webhook to endpoint,", e)
 

@@ -60,16 +60,18 @@ def webhook():
     
     # Request POST para leer los webhooks entrantes.
     if request.method == "POST":
+        # Imprime todos los Webhooks en consola.
         body = request.get_json()
         print("Webhook recibido:", body)
         print('\n')
 
-        # Manejo de respuestas de WhatsApp
+        # Analiza cada webhook entrante accediendo a sus propiedades.
         try:
             entry = body["entry"][0]
             changes = entry["changes"][0]
             value = changes["value"]
             messages = value.get("messages")
+            # Obtiene el ID del número emisor para seguir consumiendo la API.
             phone_number_id = value.get("metadata", {}).get("phone_number_id")
 
             if messages:
@@ -77,17 +79,19 @@ def webhook():
                 sender = msg["from"]
                 msg_type = msg["type"]
 
+                # Si el mensaje es de tipo texto, se le pide responder con alguna de las opciones anteriores.
                 if msg_type == "text":
                     user_text = msg["text"]["body"]
                     print(f"Texto recibido: {user_text}")
                     send_whatsapp_message(sender, "Por favor, elige una de las opciones enviadas previamente.", phone_number_id, ACCESS_TOKEN)
 
+                # El usuario ha contestado el mensaje con los botones de la plantilla.
                 elif msg_type == "button":
                     button_payload = msg["button"]["payload"]
                     button_text = msg["button"]["text"]
-                    print(f"Botón presionado: {button_text}")
+                    print(f"Botón presionado: {button_text}") # Imprime la respuesta del usuario.
 
-                    # SOLO PARA RESPUESTAS DE BOTÓN: Buscar endpoint en BD y enviar webhook.
+                    # En este punto, solo los webhooks de respuesta serán enviados a su respectivo EndPoint obtenido de la Base de Datos.
                     try:
                         metadata = value.get("metadata", {})
                         display_phone_number = metadata.get("display_phone_number")
@@ -96,15 +100,15 @@ def webhook():
                             endpoint_url = get_endpoint_from_database(display_phone_number)
                             if endpoint_url:
                                 endpoint_url = endpoint_url.rstrip()
-                                sendWebhooks(body, endpoint_url)
-                                print(f"Webhook de respuesta enviado a {endpoint_url}")
+                                sendWebhooks(body, endpoint_url) # El Webhook es enviado a su EndPoint.
                             else:
-                                print(f"No se consiguió endpoint en BD para {display_phone_number}")
+                                print(f"No se consiguió endpoint en BD para este número emisor: {display_phone_number}")
                         else:
-                            print("Sin display_phone_number en webhook de botón.")
+                            print(f"No se encontró un 'display_phone_number' de {display_phone_number} en el webhook.")
                     except Exception as e:
                         print(f"Error procesando webhook de botón: {e}")
 
+                    # Dependiendo de la respuesta del usuario, se envía su siguiente plantilla.
                     if button_payload == "Si, confirmo la cita.":
                         send_cita_confirmada(sender, phone_number_id, ACCESS_TOKEN)
                     elif button_payload == "No, cancelo la cita.":
@@ -114,7 +118,7 @@ def webhook():
                     else:
                         send_whatsapp_message(sender, "Respuesta no válida.", phone_number_id, ACCESS_TOKEN)
         except Exception as e:
-            print("Error flujo WhatsApp:", e)
+            print("Error en flujo de WhatsApp:", e)
 
         return "EVENT_RECEIVED", 200
     
