@@ -74,7 +74,7 @@ def webhook():
             # Obtiene el ID del número emisor para seguir consumiendo la API.
             phone_number_id = value.get("metadata", {}).get("phone_number_id")
 
-            # SOLO PROCESA Y ENVÍA WEBHOOKS SI HAY MENSAJES (evita webhooks de estado)
+            # SOLO PROCESA Y ENVÍA WEBHOOKS SI HAY MENSAJES (evita webhooks de estado).
             if messages:
                 msg = messages[0]
                 sender = msg["from"]
@@ -118,11 +118,7 @@ def webhook():
                     elif button_payload == "Deseo reagendar.":
                         send_reagendar_cita(sender, phone_number_id, ACCESS_TOKEN)
                     else:
-                        send_whatsapp_message(sender, "Respuesta no válida.", phone_number_id, ACCESS_TOKEN)
-            else:
-                # Este es un webhook de estado (enviado, recibido, leído) - solo se imprime, no se procesa
-                print("Webhook de estado recibido - no se procesa ni envía a endpoint")
-                
+                        send_whatsapp_message(sender, "Respuesta no válida.", phone_number_id, ACCESS_TOKEN)                
         except Exception as e:
             print("Error en flujo de WhatsApp:", e)
 
