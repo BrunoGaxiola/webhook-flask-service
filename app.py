@@ -74,10 +74,29 @@ def webhook():
             # Obtiene el ID del número emisor para seguir consumiendo la API.
             phone_number_id = value.get("metadata", {}).get("phone_number_id")
 
+            # SOLO PROCESA Y ENVÍA WEBHOOKS SI HAY MENSAJES (evita webhooks de estado)
             if messages:
                 msg = messages[0]
                 sender = msg["from"]
                 msg_type = msg["type"]
+
+                # ENVÍO DE WEBHOOKS A ENDPOINT PARA MENSAJES DE TEXTO Y BOTÓN
+                try:
+                    metadata = value.get("metadata", {})
+                    display_phone_number = metadata.get("display_phone_number")
+                    
+                    if display_phone_number:
+                        endpoint_url = get_endpoint_from_database(display_phone_number)
+                        if endpoint_url:
+                            endpoint_url = endpoint_url.rstrip()
+                            sendWebhooks(body, endpoint_url) # El Webhook es enviado a su EndPoint.
+                            print(f"Webhook de {msg_type} enviado a endpoint para {display_phone_number}")
+                        else:
+                            print(f"No se consiguió endpoint en BD para este número emisor: {display_phone_number}")
+                    else:
+                        print(f"No se encontró un 'display_phone_number' en el webhook.")
+                except Exception as e:
+                    print(f"Error procesando webhook de {msg_type}: {e}")
 
                 # Si el mensaje es de tipo texto, se le pide responder con alguna de las opciones anteriores.
                 if msg_type == "text":
@@ -91,23 +110,6 @@ def webhook():
                     button_text = msg["button"]["text"]
                     print(f"Botón presionado: {button_text}") # Imprime la respuesta del usuario.
 
-                    # En este punto, solo los webhooks de respuesta serán enviados a su respectivo EndPoint obtenido de la Base de Datos.
-                    try:
-                        metadata = value.get("metadata", {})
-                        display_phone_number = metadata.get("display_phone_number")
-                        
-                        if display_phone_number:
-                            endpoint_url = get_endpoint_from_database(display_phone_number)
-                            if endpoint_url:
-                                endpoint_url = endpoint_url.rstrip()
-                                sendWebhooks(body, endpoint_url) # El Webhook es enviado a su EndPoint.
-                            else:
-                                print(f"No se consiguió endpoint en BD para este número emisor: {display_phone_number}")
-                        else:
-                            print(f"No se encontró un 'display_phone_number' de {display_phone_number} en el webhook.")
-                    except Exception as e:
-                        print(f"Error procesando webhook de botón: {e}")
-
                     # Dependiendo de la respuesta del usuario, se envía su siguiente plantilla.
                     if button_payload == "Si, confirmo la cita.":
                         send_cita_confirmada(sender, phone_number_id, ACCESS_TOKEN)
@@ -117,6 +119,10 @@ def webhook():
                         send_reagendar_cita(sender, phone_number_id, ACCESS_TOKEN)
                     else:
                         send_whatsapp_message(sender, "Respuesta no válida.", phone_number_id, ACCESS_TOKEN)
+            else:
+                # Este es un webhook de estado (enviado, recibido, leído) - solo se imprime, no se procesa
+                print("Webhook de estado recibido - no se procesa ni envía a endpoint")
+                
         except Exception as e:
             print("Error en flujo de WhatsApp:", e)
 
