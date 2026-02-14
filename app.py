@@ -1,6 +1,6 @@
 from flask import Flask, request
 from dotenv import load_dotenv
-from messages import sendWebhooks, send_whatsapp_message, send_cita_confirmada, send_cita_cancelada, send_reagendar_cita
+from messages import sendWebhooks
 from connect import connectToDB
 import os
 from urllib3 import disable_warnings
@@ -14,14 +14,12 @@ disable_warnings()
 
 # Variables de entorno.
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
-ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN")
-PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
-SERVER_DRIVER = os.getenv("DRIVER")
+ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN") # Esta variable no se usa.s
+PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID") # Esta variable no se usa.
 SERVER_URL = os.getenv("SERVER")
 SERVER_DATABASE = os.getenv("DATABASE")
 SERVER_USER = os.getenv("USER")
 SERVER_PASSWORD = os.getenv("PASSWORD")
-INTEGGRA_WEBHOOKS_ENDPOINT = os.getenv("INTEGGRA_WEBHOOKS_ENDPOINT")
 
 # Establecer conexión con la base de datos, asignar a una variable para contruir un cursor.
 connection = connectToDB(SERVER_URL, SERVER_USER, SERVER_PASSWORD, SERVER_DATABASE)
@@ -96,29 +94,7 @@ def webhook():
                     else:
                         print(f"No se encontró un 'display_phone_number' en el webhook.")
                 except Exception as e:
-                    print(f"Error procesando webhook de {msg_type}: {e}")
-
-                # Si el mensaje es de tipo texto, se le pide responder con alguna de las opciones anteriores.
-                if msg_type == "text":
-                    user_text = msg["text"]["body"]
-                    print(f"Texto recibido: {user_text}")
-                    send_whatsapp_message(sender, "Por favor, elige una de las opciones enviadas previamente.", phone_number_id, ACCESS_TOKEN)
-
-                # El usuario ha contestado el mensaje con los botones de la plantilla.
-                elif msg_type == "button":
-                    button_payload = msg["button"]["payload"]
-                    button_text = msg["button"]["text"]
-                    print(f"Botón presionado: {button_text}") # Imprime la respuesta del usuario.
-
-                    # Dependiendo de la respuesta del usuario, se envía su siguiente plantilla.
-                    if button_payload == "Si, confirmo la cita.":
-                        send_cita_confirmada(sender, phone_number_id, ACCESS_TOKEN)
-                    elif button_payload == "No, cancelo la cita.":
-                        send_cita_cancelada(sender, phone_number_id, ACCESS_TOKEN)
-                    elif button_payload == "Deseo reagendar.":
-                        send_reagendar_cita(sender, phone_number_id, ACCESS_TOKEN)
-                    else:
-                        send_whatsapp_message(sender, "Respuesta no válida.", phone_number_id, ACCESS_TOKEN)                
+                    print(f"Error procesando webhook de {msg_type}: {e}")            
         except Exception as e:
             print("Error en flujo de WhatsApp:", e)
 

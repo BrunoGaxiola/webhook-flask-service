@@ -1,7 +1,7 @@
 import requests
 """
 Este archivo contiene todas las funciones necesarias para el envío de plantillas y mensajes con la API de WhatsApp.
-Son utilizadas en el archivo app.py.
+NOTA: SOLO LA FUNCIÓN sendWebhooks() ES UTILIZADA ACTUALMENTE EN EL PROYECTO. LAS DEMÁS FUNCIONES SE QUEDAN PARA USO FUTURO.
 """
 
 # Función para enviar los webhooks al endpoint InteGGra.
